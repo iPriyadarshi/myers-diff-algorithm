@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -12,11 +13,14 @@ public class Main {
         String command = args[0];
         String aPath = args[1];
         String bPath = args[2];
-        // TODO: read both files as raw bytes (brief, Section 2), then print the listing.
 
         try {
             byte[] fileA = Files.readAllBytes(Path.of(aPath));
             byte[] fileB = Files.readAllBytes(Path.of(bPath));
+
+            List<byte[]> linesA = LineReader.split(fileA);
+            List<byte[]> linesB = LineReader.split(fileB);
+            
         } catch (IOException e) {
             System.err.println("error: "+e.getMessage());
             System.exit(2);

@@ -5,6 +5,11 @@ import java.util.List;
 public class MyersDiff {
 
     public static List<DiffOperation> diff(List<byte[]> a, List<byte[]> b) {
+        
+        if (a.isEmpty() && b.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         int n = a.size();
         int m = b.size();
 

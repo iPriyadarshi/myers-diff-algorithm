@@ -22,9 +22,17 @@ public class Main {
             List<byte[]> linesA = LineReader.split(fileA);
             List<byte[]> linesB = LineReader.split(fileB);
 
-            List<DiffOperation> ops = MyersDiff.diff(linesA, linesB);
+            // lines
+            if(command.equals("lines")){
+                List<DiffOperation> ops = MyersDiff.diff(linesA, linesB);
+                DiffWriter.write(ops, System.out);
+                return;
+            }
 
+            // highlight
+            List<DiffOperation> ops = MyersDiff.diff(linesA, linesB);
             DiffWriter.write(ops, System.out);
+
 
         } catch (IOException e) {
             System.err.println("error: " + e.getMessage());

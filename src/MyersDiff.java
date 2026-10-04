@@ -114,7 +114,45 @@ public class MyersDiff {
 
         Collections.reverse(ops);
 
-        return ops;
+        // normalize consecutive -/+ ops
+        // deletion must come before insertion
+        return normalize(ops);
+    }
+
+    private static List<DiffOperation> normalize(List<DiffOperation> operations) {
+        List<DiffOperation> result = new ArrayList<>();
+
+        int i = 0;
+
+        while (i < operations.size()) {
+            DiffOperation operation = operations.get(i);
+
+            if (operation.getType() == ' ') {
+                result.add(operation);
+                i++;
+                continue;
+            }
+
+            List<DiffOperation> deletions = new ArrayList<>();
+            List<DiffOperation> insertions = new ArrayList<>();
+
+            while (i < operations.size() && operations.get(i).getType() != ' ') {
+                DiffOperation current = operations.get(i);
+
+                if (current.getType() == '-') {
+                    deletions.add(current);
+                } else {
+                    insertions.add(current);
+                }
+
+                i++;
+            }
+
+            result.addAll(deletions);
+            result.addAll(insertions);
+        }
+
+        return result;
     }
 
     private static boolean same(byte[] a, byte[] b) {

@@ -23,13 +23,7 @@ public class Main {
             List<byte[]> linesA = LineReader.split(fileA);
             List<byte[]> linesB = LineReader.split(fileB);
 
-            List<DiffOperation> ops = new ArrayList<>();
-
-            if(sameFiles(linesA, linesB)){
-                for(byte[] line : linesA){
-                    ops.add(new DiffOperation(' ', line));
-                }
-            }
+            List<DiffOperation> ops = buildDiff(linesA, linesB);
 
             DiffWriter.write(ops, System.out);
 
@@ -37,6 +31,35 @@ public class Main {
             System.err.println("error: " + e.getMessage());
             System.exit(2);
         }
+    }
+
+    private static List<DiffOperation> buildDiff(List<byte[]> a, List<byte[]> b) {
+        List<DiffOperation> ops = new ArrayList<>();
+
+        if (sameFiles(a, b)) {
+            for (byte[] line : a) {
+                ops.add(new DiffOperation(' ', line));
+            }
+            return ops;
+        }
+
+        if (a.isEmpty()) {
+            for (byte[] line : b) {
+                ops.add(new DiffOperation('+', line));
+            }
+            return ops;
+        }
+
+        if (b.isEmpty()) {
+            for (byte[] line : a) {
+                ops.add(new DiffOperation('-', line));
+            }
+            return ops;
+        }
+
+        // Mixed changes not implemented yet.
+        return ops;
+
     }
 
     private static boolean sameFiles(List<byte[]> a, List<byte[]> b) {

@@ -5,7 +5,7 @@ import java.util.List;
 public class MyersDiff {
 
     public static List<DiffOperation> diff(List<byte[]> a, List<byte[]> b) {
-        
+
         if (a.isEmpty() && b.isEmpty()) {
             return new ArrayList<>();
         }
@@ -20,7 +20,7 @@ public class MyersDiff {
         // every diagonal by "maxD".
         int offset = maxD;
 
-        int[] v = new int[2 * maxD + 1]; // v[k] = the furthest x position reached on diagonal k.
+        int[] v = new int[2 * maxD + 1]; // v[offset+k] = the furthest x position reached on diagonal k.
 
         List<int[]> trace = new ArrayList<>();
 
@@ -29,7 +29,6 @@ public class MyersDiff {
         // d = number of edits used so far.
         // For each d, explore every reachable diagonal.
         for (int d = 0; d <= maxD; d++) {
-            trace.add(v.clone());   // save current frontier
             for (int k = -d; k <= d; k += 2) {
 
                 int x;
@@ -52,34 +51,45 @@ public class MyersDiff {
                 v[offset + k] = x;
 
                 if (x >= n && y >= m) {
-                    return reconstruct(a, b, trace, d, offset);
+                    return reconstruct(a, b, trace, d);
                 }
             }
+
+            // Save the frontier after processing this edit distance.
+            int[] snapshot = new int[d + 1];
+
+            for (int k = -d; k <= d; k += 2) {
+                snapshot[(k + d) / 2] = v[offset + k];
+            }
+
+            trace.add(snapshot);
         }
 
         return new ArrayList<>();
     }
 
-    private static List<DiffOperation> reconstruct(List<byte[]> a, List<byte[]> b, List<int[]> trace, int d, int offset) {
+    private static List<DiffOperation> reconstruct(List<byte[]> a, List<byte[]> b, List<int[]> trace, int d) {
         List<DiffOperation> ops = new ArrayList<>();
 
         int x = a.size();
         int y = b.size();
 
         for (int currentD = d; currentD > 0; currentD--) {
-            int[] previousV = trace.get(currentD);
+            // trace[currentD - 1] contains the frontier before the current edit.
+            int previousD = currentD - 1;
+            int[] previousV = trace.get(previousD);
 
             int k = x - y;
 
             int previousK;
 
-            if (k == -currentD || (k != currentD && previousV[offset + k - 1] < previousV[offset + k + 1])) {
+            if (k == -currentD || (k != currentD && get(previousV, previousKIndex(k - 1, previousD)) < get(previousV, previousKIndex(k + 1, previousD)))) {
                 previousK = k + 1;  // insertion
             } else {
                 previousK = k - 1;    // deletion
             }
 
-            int previousX = previousV[offset + previousK];
+            int previousX = get(previousV, previousKIndex(previousK, previousD));
             int previousY = previousX - previousK;
 
             // Everything between the previous point and the current point on the same diagonal is unchanged.
@@ -122,6 +132,20 @@ public class MyersDiff {
         // normalize consecutive -/+ ops
         // deletion must come before insertion
         return normalize(ops);
+    }
+
+    private static int previousKIndex(int k, int d) {
+        // At edit distance d, only diagonals -d, -d+2, ..., d exist.
+        return (k + d) / 2;
+    }
+
+    private static int get(int[] values, int index) {
+        // A diagonal outside the previous frontier is treated as unreachable.
+        if (index < 0 || index >= values.length) {
+            return Integer.MIN_VALUE / 2;
+        }
+
+        return values[index];
     }
 
     private static List<DiffOperation> normalize(List<DiffOperation> operations) {

@@ -1,3 +1,7 @@
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 public class Main {
     public static void main(String[] args) {
         boolean known = args.length == 3 && (args[0].equals("lines") || args[0].equals("highlight"));
@@ -9,5 +13,13 @@ public class Main {
         String aPath = args[1];
         String bPath = args[2];
         // TODO: read both files as raw bytes (brief, Section 2), then print the listing.
+
+        try {
+            byte[] fileA = Files.readAllBytes(Path.of(aPath));
+            byte[] fileB = Files.readAllBytes(Path.of(bPath));
+        } catch (IOException e) {
+            System.err.println("error: "+e.getMessage());
+            System.exit(2);
+        }
     }
 }

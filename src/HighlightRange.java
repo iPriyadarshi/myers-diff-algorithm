@@ -1,7 +1,7 @@
 public class HighlightRange {
 
     private final int start;
-    private final int end;
+    private final int end;  // exclusive
 
     public HighlightRange(int start, int end) {
         this.start = start;

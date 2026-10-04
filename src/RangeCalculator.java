@@ -26,8 +26,8 @@ public class RangeCalculator {
                     rangeStart = position;
                 }
             } else if (rangeStart != -1){
-                // The changed section has ended.
-                ranges.add(new HighlightRange(rangeStart, position - 1));
+                // The changed section has ended. End is exclusive
+                ranges.add(new HighlightRange(rangeStart, position));
                 rangeStart = -1;
             }
 
@@ -38,9 +38,37 @@ public class RangeCalculator {
 
         // Close a range that reaches the end of the string.
         if (rangeStart != -1) {
-            ranges.add(new HighlightRange(rangeStart, position - 1));
+            ranges.add(new HighlightRange(rangeStart, position));
         }
 
-        return ranges;
+        return mergeTouching(ranges);
+    }
+
+    private static List<HighlightRange> mergeTouching(List<HighlightRange> ranges) {
+
+        if (ranges.isEmpty()) {
+            return ranges;
+        }
+
+        List<HighlightRange> merged = new ArrayList<>();
+
+        HighlightRange current = ranges.get(0);
+
+        for (int i = 1; i < ranges.size(); i++) {
+
+            HighlightRange next = ranges.get(i);
+
+            // 1-3 and 3-4 become:1-4
+            if (next.getStart() <= current.getEnd()) {
+                current = new HighlightRange(current.getStart(), Math.max(current.getEnd(), next.getEnd()));
+            } else {
+                merged.add(current);
+                current = next;
+            }
+        }
+
+        merged.add(current);
+
+        return merged;
     }
 }

@@ -31,7 +31,7 @@ public class Main {
 
             // highlight
             List<DiffOperation> ops = MyersDiff.diff(linesA, linesB);
-            DiffWriter.write(ops, System.out);
+            HighlightDiffWriter.write(ops, System.out);
 
 
         } catch (IOException e) {

@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -22,18 +23,34 @@ public class Main {
             List<byte[]> linesA = LineReader.split(fileA);
             List<byte[]> linesB = LineReader.split(fileB);
 
-            // keep operations for the common prefix
-            int common = Math.min(linesA.size(), linesB.size());
-            for (int i = 0; i < common; i++) {
-                if (same(linesA.get(i), linesB.get(i))) {
-                    DiffOperation op = new DiffOperation(' ', linesA.get(i));
+            List<DiffOperation> ops = new ArrayList<>();
+
+            if(sameFiles(linesA, linesB)){
+                for(byte[] line : linesA){
+                    ops.add(new DiffOperation(' ', line));
                 }
             }
+
+            DiffWriter.write(ops, System.out);
 
         } catch (IOException e) {
             System.err.println("error: " + e.getMessage());
             System.exit(2);
         }
+    }
+
+    private static boolean sameFiles(List<byte[]> a, List<byte[]> b) {
+        if (a.size() != b.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < a.size(); i++) {
+            if (!same(a.get(i), b.get(i))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // Compare two lines byte-for-byte.

@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -8,6 +9,73 @@ public class MyersDiff {
 
         if (a.isEmpty() && b.isEmpty()) {
             return new ArrayList<>();
+        }
+
+        int n = a.size();
+        int m = b.size();
+
+        // common prefix that does not need to be diffed.
+        int prefix = 0;
+
+        while (prefix < n && prefix < m && same(a.get(prefix), b.get(prefix))) {
+            prefix++;
+        }
+
+        // common suffix that does not need to be diffed.
+        int suffix = 0;
+
+        while (suffix < n - prefix && suffix < m - prefix && same(a.get(n - 1 - suffix), b.get(m - 1 - suffix))) {
+            suffix++;
+        }
+
+        List<DiffOperation> result = new ArrayList<>();
+
+        // Add the common prefix.
+        for (int i = 0; i < prefix; i++) {
+            result.add(new DiffOperation(' ', a.get(i)));
+        }
+
+        // Run Myers only on the part that actually differs.
+        List<byte[]> middleA = a.subList(prefix, n - suffix);
+
+        List<byte[]> middleB = b.subList(prefix, m - suffix);
+
+        result.addAll(diffMiddle(middleA, middleB));
+
+        // Add the common suffix.
+        for (int i = n - suffix; i < n; i++) {
+            result.add(new DiffOperation(' ', a.get(i)));
+        }
+
+        return result;
+    }
+
+    private static List<DiffOperation> diffMiddle(List<byte[]> a, List<byte[]> b) {
+
+        if (a.isEmpty() && b.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // If one side is empty, all lines are inserts or deletes.
+        if (a.isEmpty()) {
+
+            List<DiffOperation> operations = new ArrayList<>(b.size());
+
+            for (byte[] line : b) {
+                operations.add(new DiffOperation('+', line));
+            }
+            return operations;
+        }
+
+        if (b.isEmpty()) {
+
+            List<DiffOperation> operations = new ArrayList<>(a.size());
+
+            for (byte[] line : a) {
+                operations.add(new DiffOperation('-', line));
+            }
+
+            return operations;
         }
 
         int n = a.size();
@@ -186,16 +254,6 @@ public class MyersDiff {
 
     private static boolean same(byte[] a, byte[] b) {
 
-        if (a.length != b.length) {
-            return false;
-        }
-
-        for (int i = 0; i < a.length; i++) {
-            if (a[i] != b[i]) {
-                return false;
-            }
-        }
-
-        return true;
+        return Arrays.equals(a, b);
     }
 }
